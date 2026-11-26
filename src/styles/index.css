@@ -1,0 +1,306 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Cores do painel administrativo, tiradas do logotipo da Massa FM Toledo 98.5:
+ * roxo nos títulos e botões, azul nos destaques e laranja nos avisos.
+ */
+:root {
+  --c-brand: 115 34 129;
+  --c-cream: 255 243 214;
+  --c-bg: 255 255 255;
+  --c-surface: 245 243 248;
+  --c-primary: 115 34 129;
+  --c-accent: 0 89 219;
+  --c-success: 21 128 61;
+  --c-danger: 186 21 35;
+  --c-gold: 201 124 0;
+  --c-ink: 34 24 48;
+  --c-heading: var(--c-brand);
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Modo totem: 1rem acompanha o tamanho da tela, para o mesmo layout servir a
+ * telas verticais e horizontais. Na vertical, 1080 px de largura → 32 px (telas
+ * mais "quadradas", como tablets 3:4, encolhem pela altura); na horizontal, a
+ * altura é que limita.
+ */
+html.kiosk {
+  font-size: clamp(12px, min(100vw / 33.75, 100vh / 44), 40px);
+  font-size: clamp(12px, min(100vw / 33.75, 100dvh / 44), 40px);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+@media (orientation: portrait) {
+  html.kiosk {
+    font-size: clamp(12px, min(100vw / 33.75, 100vh / 59), 40px);
+    font-size: clamp(12px, min(100vw / 33.75, 100dvh / 59), 40px);
+  }
+}
+html.kiosk body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+html.kiosk img {
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* Cartões do painel administrativo. */
+.glass {
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-ink) / 0.06);
+  box-shadow: 0 0.3rem 1rem rgb(var(--c-brand) / 0.08);
+}
+
+/* Painel administrativo: tipografia e rolagem normais. */
+.admin-root {
+  min-height: 100%;
+  font-size: 16px;
+  user-select: text;
+}
+.admin-root input,
+.admin-root textarea,
+.admin-root select {
+  color: rgb(var(--c-ink));
+  background: rgb(var(--c-bg));
+  border: 1px solid rgb(var(--c-ink) / 0.25);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  min-height: 44px;
+}
+.admin-root input[type='checkbox'] {
+  min-height: auto;
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: rgb(var(--c-primary));
+}
+.admin-root input[type='color'] {
+  padding: 0.2rem;
+  width: 4rem;
+}
+.admin-root :focus-visible {
+  outline: 3px solid rgb(var(--c-primary));
+  outline-offset: 2px;
+}
+
+/* Em @layer components para que as utilidades do Tailwind (tamanhos por tela) prevaleçam. */
+
+/* Em @layer components para que as utilidades do Tailwind (tamanhos por tela) prevaleçam. */
+@layer components {
+/*
+ * Pesquisa Massa FM: tela cheia responsiva (vertical e horizontal), com as cores
+ * da rádio vindas de variáveis CSS definidas no painel (--m-*).
+ */
+.massa-root {
+  --m-blue: #0059db;
+  --m-navy: #732281;
+  --m-yellow: #f7a819;
+  --m-red: #ba1523;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Texto sobre o laranja: roxo da marca escurecido, para contraste alto. */
+  --m-ink: color-mix(in srgb, var(--m-navy) 62%, #000);
+  color: var(--m-ink);
+  font-family: Inter, system-ui, sans-serif;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  /*
+   * Fundo no laranja do logotipo: o arquivo oficial (quadrado laranja) se funde à
+   * tela. Os detalhes em roxo e azul ficam nos cantos de baixo, longe do logotipo.
+   */
+  background:
+    radial-gradient(55% 34% at 100% 100%, color-mix(in srgb, var(--m-navy) 92%, transparent) 0%, transparent 70%),
+    radial-gradient(48% 28% at 0% 100%, color-mix(in srgb, var(--m-blue) 88%, transparent) 0%, transparent 70%),
+    var(--m-yellow);
+}
+.massa-root > * {
+  position: relative;
+}
+.massa-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  display: flex;
+  flex-direction: column;
+}
+.massa-root input,
+.massa-root textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+.massa-root :focus-visible {
+  outline: 0.25rem solid var(--m-blue);
+  outline-offset: 0.2rem;
+}
+.massa-card {
+  background: #fff;
+  color: #14183a;
+  border-radius: 1.6rem;
+  box-shadow: 0 1rem 2.5rem color-mix(in srgb, var(--m-navy) 45%, transparent);
+}
+.massa-btn {
+  display: inline-flex;
+  min-height: 4.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  border-radius: 999px;
+  padding: 0 2.2rem;
+  font-family: Sora, Inter, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--m-navy);
+  box-shadow: 0 0.45rem 0 color-mix(in srgb, var(--m-navy) 60%, #000), 0 1rem 2rem rgb(0 0 0 / 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+}
+.massa-btn:active:not(:disabled) {
+  transform: translateY(0.3rem);
+  box-shadow: 0 0.15rem 0 color-mix(in srgb, var(--m-navy) 60%, #000), 0 0.5rem 1rem rgb(0 0 0 / 0.28);
+}
+.massa-btn:disabled {
+  opacity: 0.45;
+}
+.massa-btn-ghost {
+  color: var(--m-ink);
+  background: rgb(255 255 255 / 0.4);
+  border: 0.15rem solid var(--m-ink);
+  box-shadow: none;
+}
+.massa-btn-ghost:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+.massa-input {
+  width: 100%;
+  min-height: 4.2rem;
+  border-radius: 1rem;
+  border: 0.15rem solid #b9bfdc;
+  background: #fff;
+  color: #14183a;
+  padding: 0 1.2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.massa-input:focus {
+  border-color: var(--m-blue);
+  outline: 0.2rem solid color-mix(in srgb, var(--m-blue) 35%, transparent);
+  outline-offset: 0;
+}
+.massa-input[aria-invalid='true'] {
+  border-color: var(--m-red);
+}
+.massa-option {
+  display: flex;
+  width: 100%;
+  min-height: 4.2rem;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 1.1rem;
+  border: 0.15rem solid #d5d9ee;
+  background: #f4f6ff;
+  color: #14183a;
+  padding: 0.6rem 1.2rem;
+  text-align: left;
+  font-size: 1.4rem;
+  font-weight: 700;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+.massa-option:active {
+  transform: scale(0.98);
+}
+.massa-option[aria-checked='true'] {
+  border-color: var(--m-blue);
+  background: color-mix(in srgb, var(--m-blue) 12%, #fff);
+}
+.massa-check {
+  display: flex;
+  height: 2.4rem;
+  width: 2.4rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0.18rem solid var(--m-blue);
+  background: #fff;
+  color: #fff;
+}
+[aria-checked='true'] > .massa-check {
+  background: var(--m-blue);
+}
+/* Faixa de cursos do rodapé: corre de lado, sem emenda (o conteúdo vem repetido). */
+.massa-ticker {
+  overflow: hidden;
+  border-top: 1px solid rgb(20 24 58 / 0.12);
+  background: #f6f1f8;
+  font-size: 0.74rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.massa-ticker-track {
+  display: inline-flex;
+  animation: massa-ticker linear infinite;
+  will-change: transform;
+}
+.massa-ticker-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 0.38rem 0.7rem;
+}
+.massa-ticker-run > span + span::before {
+  content: '•';
+  margin-right: 1.4rem;
+  color: rgb(20 24 58 / 0.35);
+  font-weight: 400;
+}
+.massa-ticker-featured {
+  font-weight: 800;
+  color: #732281;
+}
+@keyframes massa-ticker {
+  to { transform: translateX(-50%); }
+}
+@keyframes massa-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.massa-pop { animation: massa-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes massa-burst {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
+}
+.massa-burst { animation: massa-burst 1.4s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .massa-pop, .massa-burst, .massa-ticker-track { animation: none !important; }
+  .massa-burst { display: none; }
+}
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pesquisa Massa FM</string>
+    <string name="title_activity_main">Pesquisa Massa FM</string>
+    <string name="package_name">br.edu.donaduzzi.pesquisamassa</string>
+    <string name="custom_url_scheme">br.edu.donaduzzi.pesquisamassa</string>
+</resources>
