@@ -510,9 +510,9 @@ describe('participantes: filtros, totais e exportação', () => {
     expect(period.options.map((o) => [o.value, o.count, Math.round(o.percent)])).toEqual([['Manhã', 2, 67], ['Noite', 1, 33]]);
 
     const csv = participantsToCsv(mine).split('\r\n');
-    expect(csv[0]).toBe('﻿data_hora;evento;pesquisa;telefone;aceita_comunicacoes;versao_consentimento;anonimizado;Em qual período do dia você mais ouve rádio?;Qual tipo de conteúdo você mais gosta de ouvir na rádio?;Qual estilo musical você mais gosta?');
+    expect(csv[0]).toBe('﻿data_hora;evento;pesquisa;telefone;aceita_comunicacoes;versao_consentimento;anonimizado;enviado_planilha;Em qual período do dia você mais ouve rádio?;Qual tipo de conteúdo você mais gosta de ouvir na rádio?;Qual estilo musical você mais gosta?');
     expect(csv).toHaveLength(4);
-    expect(csv[1]).toContain(';Evento Massa FM;Pesquisa Massa FM;(45) 99911-0001;sim;v1;nao;Manhã;Música;Sertanejo');
+    expect(csv[1]).toContain(';Evento Massa FM;Pesquisa Massa FM;(45) 99911-0001;sim;v1;nao;nao;Manhã;Música;Sertanejo');
     const tcsv = totalsToCsv(totals, mine.length);
     expect(tcsv).toContain('(geral);participantes;3;');
     expect(tcsv).toContain('Em qual período do dia você mais ouve rádio?;Manhã;2;66.7');
@@ -552,7 +552,7 @@ describe('painel administrativo', () => {
     await openAdmin();
     expect(screen.getByRole('heading', { name: 'Painel — Pesquisa Massa FM' })).toBeInTheDocument();
     const tabs = within(screen.getByRole('navigation', { name: 'Seções' })).getAllByRole('button').map((b) => b.textContent?.trim());
-    expect(tabs).toEqual(['Eventos', 'Pesquisas e perguntas', 'Totem, textos e consentimento', 'Participantes e resultados', 'Segurança', 'Sobre o sistema']);
+    expect(tabs).toEqual(['Eventos', 'Pesquisas e perguntas', 'Totem, textos e consentimento', 'Participantes e resultados', 'Envio online', 'Segurança', 'Sobre o sistema']);
     expect(document.body.textContent).not.toMatch(/Cursos|Quiz|Estatísticas/);
   });
 

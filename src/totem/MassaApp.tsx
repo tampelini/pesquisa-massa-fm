@@ -9,6 +9,7 @@ import { QrCode } from '../components/QrCode';
 import { MassaFooter, MassaLogo, massaThemeStyle } from './MassaBrand';
 import { DuplicatePhoneError, phoneAlreadyInEvent, resolveActive, submitParticipation, useMassa } from '../core/store';
 import { isAnswered, isWebUrl, maskPhone, missingRequired, phoneError } from '../core/validation';
+import { syncPending } from '../core/sync';
 import type { MassaDraftAnswers, MassaQuestion } from '../core/types';
 
 type Phase = 'start' | 'identify' | 'questions' | 'thanks';
@@ -217,6 +218,8 @@ export function MassaApp() {
     try {
       await submitParticipation({ active, phone: draft.phone, answers: draft.answers, consent: config.consent, marketingOptIn: draft.marketing });
       playSound('finish');
+      // Já gravada no aparelho: o envio para a planilha roda por fora e não segura a pessoa.
+      void syncPending(config.sync).catch(() => {});
       // Os dados saem da tela assim que são gravados.
       setDraft(emptyDraft());
       setTouched(false);

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { MassaApp } from './totem/MassaApp';
 import { useMassa } from './core/store';
+import { startBackgroundSync } from './core/sync';
 
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
@@ -24,6 +25,9 @@ function Router() {
   useEffect(() => {
     document.documentElement.classList.toggle('kiosk', !isAdmin);
   }, [isAdmin]);
+
+  // A fila do envio online anda sozinha enquanto o app está aberto (totem ou painel).
+  useEffect(() => (ready ? startBackgroundSync() : undefined), [ready]);
 
   if (!ready) return <div className="massa-root" aria-busy="true" />;
   if (isAdmin) {

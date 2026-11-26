@@ -32,7 +32,10 @@ export function AboutPanel() {
               O único dado pessoal coletado é o telefone, com consentimento registrado. Ele fica separado por evento e pode ser exportado, anonimizado
               ou excluído em Participantes e resultados.
             </li>
-            <li>Com mais de um totem, cada aparelho guarda os próprios participantes: exporte o CSV de cada um ao fim do evento.</li>
+            <li>
+              Com o Envio online ligado, cada participação também vai para uma planilha do Google Sheets (com fila para quando não houver internet).
+              Sem ele, cada aparelho guarda só os próprios participantes: exporte o CSV de cada um ao fim do evento.
+            </li>
             <li>O PIN protege o painel contra o público do totem. Troque o PIN padrão em Segurança e mantenha o aparelho sob guarda da equipe.</li>
           </ul>
         </div>

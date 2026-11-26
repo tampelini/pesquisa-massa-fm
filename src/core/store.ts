@@ -41,6 +41,7 @@ export function mergeMassaConfig(saved: Partial<MassaConfig> | undefined): Massa
     ...defined,
     colors: { ...base.colors, ...(saved.colors ?? {}) },
     consent: { ...base.consent, ...(saved.consent ?? {}) },
+    sync: { ...base.sync, ...(saved.sync ?? {}) },
     courses: Array.isArray(saved.courses) ? normalizeCourses(saved.courses, base.courses) : base.courses,
   };
 }
@@ -80,6 +81,9 @@ export function loadMassa(): Promise<void> {
   }
   return loading;
 }
+
+/** Configuração atual, para código fora dos componentes (ex.: envio em segundo plano). */
+export const getMassaConfig = () => state.config;
 
 export async function saveMassaConfig(config: MassaConfig): Promise<void> {
   set({ config });
@@ -283,12 +287,12 @@ export function participantsToCsv(list: readonly MassaParticipant[]): string {
   for (const p of list) for (const a of p.answers) questions.set(a.questionId, a.prompt);
   const ids = [...questions.keys()];
   const rows: unknown[][] = [[
-    'data_hora', 'evento', 'pesquisa', 'telefone', 'aceita_comunicacoes', 'versao_consentimento', 'anonimizado', ...ids.map((id) => questions.get(id)),
+    'data_hora', 'evento', 'pesquisa', 'telefone', 'aceita_comunicacoes', 'versao_consentimento', 'anonimizado', 'enviado_planilha', ...ids.map((id) => questions.get(id)),
   ]];
   for (const p of list) {
     rows.push([
       formatDateTime(p.createdAt), p.eventName, p.surveyName, maskPhone(p.phone), p.marketingOptIn ? 'sim' : 'nao', p.consentVersion,
-      p.anonymizedAt ? 'sim' : 'nao',
+      p.anonymizedAt ? 'sim' : 'nao', p.syncedAt ? 'sim' : 'nao',
       ...ids.map((id) => p.answers.find((a) => a.questionId === id)?.values.join(' | ') ?? ''),
     ]);
   }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, Info, KeyRound, ListChecks, LogOut, MonitorSmartphone, Users } from 'lucide-react';
+import { CalendarDays, CloudUpload, Info, KeyRound, ListChecks, LogOut, MonitorSmartphone, Users } from 'lucide-react';
 import { useIdle } from '../hooks/useIdle';
 import { resolveActive, useMassa } from '../core/store';
 import { AdminGate } from './AdminGate';
@@ -7,6 +7,7 @@ import { EventsPanel } from './EventsPanel';
 import { SurveysPanel } from './SurveysPanel';
 import { TotemPanel } from './TotemPanel';
 import { ParticipantsPanel } from './ParticipantsPanel';
+import { SyncPanel } from './SyncPanel';
 import { SecurityTab } from './SecurityTab';
 import { AboutPanel } from './AboutPanel';
 import { Notice } from './ui';
@@ -16,6 +17,7 @@ const TABS = [
   { id: 'surveys', label: 'Pesquisas e perguntas', Icon: ListChecks },
   { id: 'totem', label: 'Totem, textos e consentimento', Icon: MonitorSmartphone },
   { id: 'participants', label: 'Participantes e resultados', Icon: Users },
+  { id: 'sync', label: 'Envio online', Icon: CloudUpload },
   { id: 'security', label: 'Segurança', Icon: KeyRound },
   { id: 'about', label: 'Sobre o sistema', Icon: Info },
 ] as const;
@@ -82,6 +84,7 @@ export default function AdminApp() {
         {tab === 'surveys' && <SurveysPanel />}
         {tab === 'totem' && <TotemPanel />}
         {tab === 'participants' && <ParticipantsPanel />}
+        {tab === 'sync' && <SyncPanel />}
         {tab === 'security' && <SecurityTab />}
         {tab === 'about' && <AboutPanel />}
       </main>

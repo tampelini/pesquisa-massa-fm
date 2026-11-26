@@ -84,4 +84,6 @@ export const DEFAULT_MASSA_CONFIG: MassaConfig = {
     regulationLabel: 'Regulamento',
     regulationUrl: '',
   },
+  // Desligado até o administrador informar a planilha no painel (nada disso vai no código).
+  sync: { enabled: false, url: '', token: '', device: '' },
 };

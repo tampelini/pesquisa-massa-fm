@@ -235,6 +235,7 @@ export function ParticipantsPanel() {
                   <td className="p-2">
                     Aceito ({p.consentVersion})
                     <span className="block text-xs text-ink/60">Comunicações: {p.marketingOptIn ? 'sim' : 'não'}</span>
+                    <span className="block text-xs text-ink/60">Planilha: {p.syncedAt ? 'enviado' : 'na fila'}</span>
                   </td>
                   <td className="p-2">
                     <div className="flex gap-2">

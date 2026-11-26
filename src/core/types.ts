@@ -47,6 +47,17 @@ export interface MassaConsent {
   regulationUrl: string;
 }
 
+/** Envio online das participações para uma planilha do Google Sheets. */
+export interface MassaSyncConfig {
+  enabled: boolean;
+  /** Endereço do App da Web do Apps Script (termina em /exec). */
+  url: string;
+  /** Senha combinada com o script da planilha. */
+  token: string;
+  /** Nome deste totem, gravado em cada linha. */
+  device: string;
+}
+
 export interface MassaCourse {
   name: string;
   /** Página do curso no site da Faculdade. Vazio = o nome aparece sem link. */
@@ -89,6 +100,7 @@ export interface MassaConfig {
   /** Página aberta ao tocar no título da faixa (lista de todos os cursos). Vazio = sem link. */
   coursesUrl: string;
   consent: MassaConsent;
+  sync: MassaSyncConfig;
 }
 
 export interface MassaAnswer {
@@ -114,6 +126,8 @@ export interface MassaParticipant {
   consentText: string;
   marketingOptIn: boolean;
   anonymizedAt?: number;
+  /** Quando a planilha online confirmou o recebimento (ausente = ainda na fila). */
+  syncedAt?: number;
 }
 
 /** Respostas em preenchimento no totem: IDs de alternativas ou texto livre. */
