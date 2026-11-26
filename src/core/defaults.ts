@@ -59,18 +59,20 @@ export const DEFAULT_MASSA_CONFIG: MassaConfig = {
   colors: DEFAULT_MASSA_COLORS,
   credit: 'Desenvolvido pela Faculdade Donaduzzi — Curso de Ciência de Dados e Inteligência Artificial.',
   creditUrl: 'https://tampelini.github.io/cd-ia-donaduzzi/',
-  // Cursos de graduação listados em faculdadedonaduzzi.com.br/cursos-de-graduacao.
+  // Cursos de graduação e páginas de cada um, como listados em
+  // faculdadedonaduzzi.com.br/cursos-de-graduacao (conferidos em novembro de 2026).
+  coursesUrl: 'https://faculdadedonaduzzi.com.br/cursos-de-graduacao/',
   courses: [
-    'Administração',
-    'Análise e Desenvolvimento de Sistemas',
-    'Ciência de Dados',
-    'Direito',
-    'Engenharia de Bioprocessos e Biotecnologia',
-    'Engenharia de Software',
-    'Farmácia',
-    'Inteligência Artificial',
-    'Pedagogia',
-    'Psicologia',
+    { name: 'Administração', url: 'https://faculdadedonaduzzi.com.br/graduacao-administracao/' },
+    { name: 'Análise e Desenvolvimento de Sistemas', url: 'https://faculdadedonaduzzi.com.br/graduacao-analise-e-desenvolvimento-de-sistemas/' },
+    { name: 'Ciência de Dados', url: 'https://faculdadedonaduzzi.com.br/graduacao-ciencia-de-dados/' },
+    { name: 'Direito', url: 'https://faculdadedonaduzzi.com.br/graduacao-em-direito/' },
+    { name: 'Engenharia de Bioprocessos e Biotecnologia', url: 'https://faculdadedonaduzzi.com.br/graduacao-engenharia-de-bioprocessos/' },
+    { name: 'Engenharia de Software', url: 'https://faculdadedonaduzzi.com.br/graduacao-engenharia-de-software/' },
+    { name: 'Farmácia', url: 'https://faculdadedonaduzzi.com.br/graduacao-farmacia/' },
+    { name: 'Inteligência Artificial', url: 'https://faculdadedonaduzzi.com.br/inteligencia-artificial/' },
+    { name: 'Pedagogia', url: 'https://faculdadedonaduzzi.com.br/graduacao-em-pedagogia/' },
+    { name: 'Psicologia', url: 'https://faculdadedonaduzzi.com.br/graduacao-em-psicologia/' },
   ],
   consent: {
     version: 'v1',

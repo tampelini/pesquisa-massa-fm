@@ -106,7 +106,22 @@ describe('totem: identidade e créditos', () => {
     const ticker = within(footer).getByRole('group', { name: 'Cursos da Faculdade Donaduzzi' });
     const track = ticker.firstElementChild as HTMLElement;
     const [visible, copy] = Array.from(track.children) as HTMLElement[];
-    expect(Array.from(visible.children).slice(1).map((c) => c.textContent)).toEqual(DEFAULT_MASSA_CONFIG.courses);
+    expect(Array.from(visible.children).slice(1).map((c) => c.textContent)).toEqual(DEFAULT_MASSA_CONFIG.courses.map((c) => c.name));
+    // Cada curso leva à própria página no site da Faculdade; o título leva à lista de cursos.
+    const courseLinks = within(visible).getAllByRole('link');
+    expect(courseLinks.map((a) => a.getAttribute('href'))).toEqual([
+      'https://faculdadedonaduzzi.com.br/cursos-de-graduacao/',
+      ...DEFAULT_MASSA_CONFIG.courses.map((c) => c.url),
+    ]);
+    for (const a of courseLinks) {
+      expect(a.getAttribute('href')).toMatch(/^https:\/\/faculdadedonaduzzi\.com\.br\/[a-z-]+\/$/);
+      expect(a).toHaveAttribute('target', '_blank');
+      expect(a).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+    expect(new Set(DEFAULT_MASSA_CONFIG.courses.map((c) => c.url)).size).toBe(10);
+    expect(within(visible).getByRole('link', { name: 'Ciência de Dados (abre o site em outra aba)' })).toHaveAttribute('href', 'https://faculdadedonaduzzi.com.br/graduacao-ciencia-de-dados/');
+    // A cópia fica fora do teclado.
+    expect(Array.from(copy.querySelectorAll('a')).every((a) => a.tabIndex === -1)).toBe(true);
     expect(DEFAULT_MASSA_CONFIG.courses).toHaveLength(10);
     expect(Array.from(visible.querySelectorAll('.massa-ticker-featured')).map((c) => c.textContent)).toEqual(['Ciência de Dados', 'Inteligência Artificial']);
     // A repetição que deixa a rolagem sem emenda fica escondida dos leitores de tela.
@@ -128,16 +143,28 @@ describe('totem: identidade e créditos', () => {
 
   it('a faixa de cursos segue a lista do painel e some quando a lista fica vazia', async () => {
     await loadMassa();
-    await saveMassaConfig({ ...DEFAULT_MASSA_CONFIG, courses: ['Ciência de Dados', 'Medicina'], credit: 'Feito pelo curso de Medicina' });
+    await saveMassaConfig({ ...DEFAULT_MASSA_CONFIG, courses: [{ name: 'Ciência de Dados', url: '' }, { name: 'Medicina', url: 'https://exemplo.edu.br/medicina/' }], credit: 'Feito pelo curso de Medicina' });
     const first = await renderTotem();
     const run = within(screen.getByTestId('massa-footer')).getByRole('group', { name: 'Cursos da Faculdade Donaduzzi' }).firstElementChild!.firstElementChild!;
     expect(Array.from(run.children).slice(1).map((c) => c.textContent)).toEqual(['Ciência de Dados', 'Medicina']);
     expect(Array.from(run.querySelectorAll('.massa-ticker-featured')).map((c) => c.textContent)).toEqual(['Medicina']);
+    // Curso sem link aparece só como texto.
+    expect(within(run as HTMLElement).queryByRole('link', { name: /Ciência de Dados/ })).not.toBeInTheDocument();
+    expect(within(run as HTMLElement).getByRole('link', { name: /Medicina/ })).toHaveAttribute('href', 'https://exemplo.edu.br/medicina/');
     first.unmount();
     await saveMassaConfig({ ...DEFAULT_MASSA_CONFIG, courses: [] });
     await renderTotem();
     expect(screen.queryByTestId('massa-courses')).not.toBeInTheDocument();
     expect(screen.getByTestId('massa-footer')).toHaveTextContent('Desenvolvido pela Faculdade Donaduzzi');
+  });
+
+  it('lista de cursos salva só com nomes (primeira versão) ganha os links padrão', async () => {
+    await db.setKV('massaConfig', { ...DEFAULT_MASSA_CONFIG, coursesUrl: undefined, courses: ['Farmácia', 'Curso novo'] });
+    await renderTotem();
+    const footer = within(screen.getByTestId('massa-footer'));
+    expect(footer.getByRole('link', { name: /^Farmácia/ })).toHaveAttribute('href', 'https://faculdadedonaduzzi.com.br/graduacao-farmacia/');
+    expect(footer.queryByRole('link', { name: /Curso novo/ })).not.toBeInTheDocument();
+    expect(footer.getByRole('link', { name: /^Cursos da Faculdade Donaduzzi/ })).toHaveAttribute('href', 'https://faculdadedonaduzzi.com.br/cursos-de-graduacao/');
   });
 
   it('logotipo enviado no painel substitui o embutido', async () => {
@@ -161,8 +188,14 @@ describe('totem: identidade e créditos', () => {
     fireEvent.click(radio);
     await waitFor(() => expect(open).toHaveBeenCalledWith('https://massa.com.br/massa-fm-toledo/', '_blank'));
 
-    fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link'));
+    // O logotipo da Faculdade continua levando ao site do curso de CD e IA.
+    fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: /Faculdade Donaduzzi: conheça o curso/ }));
     await waitFor(() => expect(open).toHaveBeenCalledWith('https://tampelini.github.io/cd-ia-donaduzzi/', '_blank'));
+    // Tocar em um curso da faixa abre a página daquele curso.
+    fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: 'Farmácia (abre o site em outra aba)' }));
+    await waitFor(() => expect(open).toHaveBeenCalledWith('https://faculdadedonaduzzi.com.br/graduacao-farmacia/', '_blank'));
+    fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: 'Cursos da Faculdade Donaduzzi (abre o site em outra aba)' }));
+    await waitFor(() => expect(open).toHaveBeenCalledWith('https://faculdadedonaduzzi.com.br/cursos-de-graduacao/', '_blank'));
     expect(fake.opener).toBeNull();
     // A pesquisa continua onde estava.
     expect(screen.getByText('Pergunta 1 de 3')).toBeInTheDocument();
@@ -170,7 +203,7 @@ describe('totem: identidade e créditos', () => {
 
   it('sem links configurados, os logotipos não são clicáveis', async () => {
     await loadMassa();
-    await saveMassaConfig({ ...DEFAULT_MASSA_CONFIG, creditUrl: '', stationUrl: '' });
+    await saveMassaConfig({ ...DEFAULT_MASSA_CONFIG, creditUrl: '', stationUrl: '', coursesUrl: '', courses: DEFAULT_MASSA_CONFIG.courses.map((c) => ({ ...c, url: '' })) });
     await renderTotem();
     await identify();
     await screen.findByText('Pergunta 1 de 3');
@@ -629,13 +662,20 @@ describe('painel administrativo', () => {
     fireEvent.change(screen.getByLabelText('Link da Política de Privacidade'), { target: { value: 'https://exemplo.com.br/privacidade' } });
     fireEvent.change(screen.getByLabelText(/^Link ao tocar no logotipo da rádio/), { target: { value: 'https://exemplo.com.br/radio' } });
     fireEvent.change(screen.getByLabelText(/^Link ao tocar no logotipo da Faculdade/), { target: { value: '' } });
-    fireEvent.change(screen.getByLabelText(/^Cursos que passam na faixa do rodapé/), { target: { value: 'Ciência de Dados\n  Inteligência Artificial  \n\nMedicina' } });
+    fireEvent.change(screen.getByLabelText(/^Cursos que passam na faixa do rodapé/), { target: { value: 'Ciência de Dados | https://exemplo.edu.br/cd/\n  Inteligência Artificial  \n\nMedicina|sem-link' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar configurações da pesquisa' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('O link do curso "Medicina" deve começar com http');
+    fireEvent.change(screen.getByLabelText(/^Cursos que passam na faixa do rodapé/), { target: { value: 'Ciência de Dados | https://exemplo.edu.br/cd/\n  Inteligência Artificial  \n\nMedicina' } });
     fireEvent.change(screen.getByLabelText(/Retorno à tela inicial por inatividade/), { target: { value: '45' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salvar configurações da pesquisa' }));
     expect(await screen.findByText('Configurações da Pesquisa Massa FM salvas.')).toBeInTheDocument();
     const cfg = (await db.getKV<typeof DEFAULT_MASSA_CONFIG>('massaConfig'))!;
     expect(cfg).toMatchObject({ idleSeconds: 45, stationUrl: 'https://exemplo.com.br/radio', creditUrl: '' });
-    expect(cfg.courses).toEqual(['Ciência de Dados', 'Inteligência Artificial', 'Medicina']);
+    expect(cfg.courses).toEqual([
+      { name: 'Ciência de Dados', url: 'https://exemplo.edu.br/cd/' },
+      { name: 'Inteligência Artificial', url: '' },
+      { name: 'Medicina', url: '' },
+    ]);
     expect(cfg.consent).toMatchObject({ version: 'v2', requiredText: 'Concordo com o novo regulamento.', privacyUrl: 'https://exemplo.com.br/privacidade' });
 
     // A participação seguinte registra a nova versão do consentimento.

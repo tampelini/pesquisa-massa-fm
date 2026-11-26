@@ -23,7 +23,9 @@ do mesmo evento. Se a gravação falhar, as respostas ficam na tela para tentar 
 
 O rodapé de todas as telas traz o logotipo da Faculdade Donaduzzi, o crédito com o curso responsável em negrito
 (Ciência de Dados e Inteligência Artificial) e uma faixa em que os nomes de todos os cursos da Faculdade correm de
-lado, com os dois cursos do crédito em destaque. A lista de cursos é editável no painel.
+lado, com os dois cursos do crédito em destaque. Tocar no nome de um curso abre a página dele em
+faculdadedonaduzzi.com.br, e o título da faixa abre a lista de cursos de graduação; a faixa para enquanto é tocada.
+A lista de cursos e os links são editáveis no painel (uma linha por curso: `Nome | link`).
 
 No canto superior, o logotipo da Massa FM abre <https://massa.com.br/massa-fm-toledo/>. No rodapé, o logotipo da
 Faculdade Donaduzzi abre <https://tampelini.github.io/cd-ia-donaduzzi/>. Os dois abrem em outra aba (no APK, no
@@ -104,7 +106,8 @@ export JAVA_HOME="$HOME/.jdks/jbr-21.0.11"
 npm run android:apk
 ```
 
-O arquivo sai em `android/app/build/outputs/apk/debug/app-debug.apk`.
+O arquivo sai em `android/app/build/outputs/apk/debug/app-debug.apk`. O APK de cada versão também fica para
+download em <https://github.com/tampelini/pesquisa-massa-fm/releases/latest>.
 
 > O Gradle 8.14 usado pelo Capacitor não roda com o JDK 25 embutido no Android Studio mais recente. Use um JDK 21
 > (em Android Studio: *Settings → Build Tools → Gradle → Gradle JDK*).
@@ -177,7 +180,7 @@ scripts/       verificação offline e geração de ícones
 
 ## Testes
 
-`npm test` roda 28 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
+`npm test` roda 29 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
 do participante, aceite obrigatório, telefone duplicado por evento, falha de gravação, inatividade, tipos de pergunta,
 filtros, totais, CSV, anonimização, PIN e as seções do painel. `npm run verify:offline` confere o pré-cache do Service
 Worker.

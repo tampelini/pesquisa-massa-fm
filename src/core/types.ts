@@ -47,6 +47,12 @@ export interface MassaConsent {
   regulationUrl: string;
 }
 
+export interface MassaCourse {
+  name: string;
+  /** Página do curso no site da Faculdade. Vazio = o nome aparece sem link. */
+  url: string;
+}
+
 export interface MassaColors {
   /** Azul do "98.5": seleção e barras. */
   blue: string;
@@ -79,7 +85,9 @@ export interface MassaConfig {
   /** Página aberta ao tocar no logotipo da Faculdade no rodapé. Vazio = sem link. */
   creditUrl: string;
   /** Cursos da Faculdade que passam na faixa do rodapé (vazio = sem faixa). */
-  courses: string[];
+  courses: MassaCourse[];
+  /** Página aberta ao tocar no título da faixa (lista de todos os cursos). Vazio = sem link. */
+  coursesUrl: string;
   consent: MassaConsent;
 }
 

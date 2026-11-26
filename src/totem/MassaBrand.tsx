@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { openExternal } from '../services/externalLink';
 import { isWebUrl } from '../core/validation';
 import { DEFAULT_MASSA_LOGO, FACULTY_LOGO } from '../core/defaults';
-import type { MassaConfig } from '../core/types';
+import type { MassaConfig, MassaCourse } from '../core/types';
 
 /** Variáveis CSS com as cores da rádio (editáveis no painel). */
 export function massaThemeStyle(config: MassaConfig): CSSProperties {
@@ -89,7 +89,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').t
 /** Cursos citados no crédito (ex.: Ciência de Dados e Inteligência Artificial) ganham destaque na faixa. */
 export function highlightedCourses(config: Pick<MassaConfig, 'courses' | 'credit'>): Set<string> {
   const credit = fold(config.credit);
-  return new Set(config.courses.filter((c) => c.trim() && credit.includes(fold(c.trim()))));
+  return new Set(config.courses.map((c) => c.name.trim()).filter((name) => name && credit.includes(fold(name))));
 }
 
 /**
@@ -111,22 +111,45 @@ export function CreditText({ credit, className = '' }: { credit: string; classNa
  * vez para a rolagem não ter emenda; leitores de tela recebem a lista uma só vez.
  */
 function CoursesTicker({ config }: { config: MassaConfig }) {
-  const courses = config.courses.map((c) => c.trim()).filter(Boolean);
+  const courses: MassaCourse[] = config.courses.map((c) => ({ name: c.name.trim(), url: c.url.trim() })).filter((c) => c.name);
   if (!courses.length) return null;
   const featured = highlightedCourses(config);
+  const title = 'Cursos da Faculdade Donaduzzi';
+
+  // Cada item abre a página do curso em outra aba (no APK, no navegador do aparelho).
+  // A cópia que fecha a emenda da rolagem também é tocável, mas fica fora da leitura de tela e do teclado.
+  const item = (label: string, url: string, className: string, hidden: boolean) =>
+    isWebUrl(url) ? (
+      <a
+        key={label}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={hidden ? -1 : undefined}
+        aria-label={hidden ? undefined : `${label} (abre o site em outra aba)`}
+        onClick={(e) => {
+          e.preventDefault();
+          void openExternal(url);
+        }}
+        className={`massa-ticker-item ${className}`}
+      >
+        {label}
+      </a>
+    ) : (
+      <span key={label} className={`massa-ticker-item ${className}`}>
+        {label}
+      </span>
+    );
+
   const run = (hidden: boolean) => (
     <span className="massa-ticker-run" aria-hidden={hidden || undefined}>
-      <span className="font-bold uppercase tracking-[0.08em] text-[#14183a]/70">Cursos da Faculdade Donaduzzi</span>
-      {courses.map((c) => (
-        <span key={c} className={featured.has(c) ? 'massa-ticker-featured' : undefined}>
-          {c}
-        </span>
-      ))}
+      {item(title, config.coursesUrl.trim(), 'massa-ticker-title', hidden)}
+      {courses.map((c) => item(c.name, c.url, featured.has(c.name) ? 'massa-ticker-featured' : '', hidden))}
     </span>
   );
   return (
-    <div className="massa-ticker" data-testid="massa-courses" role="group" aria-label="Cursos da Faculdade Donaduzzi">
-      {/* A velocidade acompanha o tamanho da lista: cerca de 4 s por curso. */}
+    <div className="massa-ticker" data-testid="massa-courses" role="group" aria-label={title}>
+      {/* A velocidade acompanha o tamanho da lista: cerca de 4 s por curso. A faixa para enquanto é tocada. */}
       <div className="massa-ticker-track" style={{ animationDuration: `${Math.max(20, courses.length * 4)}s` }}>
         {run(false)}
         {run(true)}

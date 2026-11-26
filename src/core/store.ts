@@ -4,7 +4,7 @@ import { newId } from '../services/files';
 import { toCsv } from '../services/csv';
 import { DEFAULT_MASSA_CONFIG, DEFAULT_MASSA_EVENTS, DEFAULT_MASSA_SURVEYS } from './defaults';
 import { maskPhone, normalizePhone, visibleQuestions } from './validation';
-import type { MassaAnswer, MassaConfig, MassaDraftAnswers, MassaEvent, MassaParticipant, MassaQuestion, MassaSurvey } from './types';
+import type { MassaAnswer, MassaConfig, MassaCourse, MassaDraftAnswers, MassaEvent, MassaParticipant, MassaQuestion, MassaSurvey } from './types';
 
 const KEYS = { config: 'massaConfig', events: 'massaEvents', surveys: 'massaSurveys' } as const;
 
@@ -15,16 +15,33 @@ export interface MassaState {
   surveys: MassaSurvey[];
 }
 
+/**
+ * Aceita a lista salva pela primeira versão (só nomes): cada nome ganha o link
+ * padrão do curso correspondente, quando houver.
+ */
+function normalizeCourses(saved: unknown[], defaults: MassaCourse[]): MassaCourse[] {
+  return saved
+    .map((c) => {
+      if (typeof c === 'string') return { name: c, url: defaults.find((d) => d.name === c)?.url ?? '' };
+      const o = c as Partial<MassaCourse>;
+      return { name: String(o?.name ?? ''), url: String(o?.url ?? '') };
+    })
+    .filter((c) => c.name.trim());
+}
+
 /** Mescla a configuração salva com os padrões (campos novos ganham valor padrão). */
 export function mergeMassaConfig(saved: Partial<MassaConfig> | undefined): MassaConfig {
   const base = structuredClone(DEFAULT_MASSA_CONFIG);
   if (!saved) return base;
+  // Campos ausentes ou indefinidos na configuração salva ficam com o valor padrão
+  // (null é um valor válido: "nenhum evento em uso").
+  const defined = Object.fromEntries(Object.entries(saved).filter(([, v]) => v !== undefined)) as Partial<MassaConfig>;
   return {
     ...base,
-    ...saved,
+    ...defined,
     colors: { ...base.colors, ...(saved.colors ?? {}) },
     consent: { ...base.consent, ...(saved.consent ?? {}) },
-    courses: Array.isArray(saved.courses) ? saved.courses : base.courses,
+    courses: Array.isArray(saved.courses) ? normalizeCourses(saved.courses, base.courses) : base.courses,
   };
 }
 

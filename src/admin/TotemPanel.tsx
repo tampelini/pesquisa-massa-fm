@@ -5,7 +5,7 @@ import { readFileAsDataUrl } from '../services/files';
 import { DEFAULT_MASSA_COLORS, DEFAULT_MASSA_CONFIG, DEFAULT_MASSA_LOGO } from '../core/defaults';
 import { saveMassaConfig, useMassa } from '../core/store';
 import { isWebUrl } from '../core/validation';
-import type { MassaColors, MassaConfig, MassaConsent } from '../core/types';
+import type { MassaColors, MassaConfig, MassaConsent, MassaCourse } from '../core/types';
 
 const COLOR_LABELS: Record<keyof MassaColors, string> = {
   blue: 'Azul do "98.5" (seleção e detalhes)',
@@ -13,6 +13,18 @@ const COLOR_LABELS: Record<keyof MassaColors, string> = {
   yellow: 'Laranja (fundo das telas)',
   red: 'Vermelho (avisos de erro)',
 };
+
+/** Uma linha por curso: "Nome | https://página-do-curso" (o link é opcional). */
+export const coursesToText = (courses: MassaCourse[]) => courses.map((c) => (c.url ? `${c.name} | ${c.url}` : c.name)).join('\n');
+export function textToCourses(text: string): MassaCourse[] {
+  return text
+    .split('\n')
+    .map((line) => {
+      const cut = line.indexOf('|');
+      return cut === -1 ? { name: line.trim(), url: '' } : { name: line.slice(0, cut).trim(), url: line.slice(cut + 1).trim() };
+    })
+    .filter((c) => c.name);
+}
 
 const MAX_LOGO_BYTES = 1.5 * 1024 * 1024;
 
@@ -25,6 +37,9 @@ export function validateMassaConfig(c: MassaConfig): string[] {
   if (!isWebUrl(c.consent.privacyUrl)) errors.push('O link da Política de Privacidade deve começar com http:// ou https://.');
   if (c.consent.regulationUrl.trim() && !isWebUrl(c.consent.regulationUrl)) errors.push('O link do regulamento deve começar com http:// ou https://.');
   if (c.stationUrl.trim() && !isWebUrl(c.stationUrl)) errors.push('O link do logotipo da rádio deve começar com http:// ou https://.');
+  if (c.coursesUrl.trim() && !isWebUrl(c.coursesUrl)) errors.push('O link da lista de cursos deve começar com http:// ou https://.');
+  const badCourse = c.courses.find((x) => x.url.trim() && !isWebUrl(x.url));
+  if (badCourse) errors.push(`O link do curso "${badCourse.name}" deve começar com http:// ou https://.`);
   if (c.creditUrl.trim() && !isWebUrl(c.creditUrl)) errors.push('O link do logotipo da Faculdade deve começar com http:// ou https://.');
   if (c.idleSeconds < 15 || c.idleSeconds > 600) errors.push('Retorno por inatividade: entre 15 e 600 segundos.');
   if (c.thanksSeconds < 2 || c.thanksSeconds > 60) errors.push('Tela de agradecimento: entre 2 e 60 segundos.');
@@ -80,7 +95,12 @@ export function TotemPanel() {
   const { config } = useMassa();
   const [c, setC] = useState<MassaConfig>(config);
   const [status, setStatus] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
-  useEffect(() => setC(config), [config]);
+  // A lista de cursos é editada como texto e convertida ao salvar.
+  const [coursesText, setCoursesText] = useState(() => coursesToText(config.courses));
+  useEffect(() => {
+    setC(config);
+    setCoursesText(coursesToText(config.courses));
+  }, [config]);
 
   const set = <K extends keyof MassaConfig>(k: K, v: MassaConfig[K]) => {
     setStatus(null);
@@ -91,9 +111,9 @@ export function TotemPanel() {
   const consentChanged = c.consent.requiredText !== config.consent.requiredText || c.consent.optionalText !== config.consent.optionalText;
 
   async function save() {
-    const errs = validateMassaConfig(c);
+    const errs = validateMassaConfig({ ...c, courses: textToCourses(coursesText) });
     if (errs.length) return setStatus({ tone: 'error', text: errs.join(' ') });
-    await saveMassaConfig({ ...c, title: c.title.trim(), creditUrl: c.creditUrl.trim(), stationUrl: c.stationUrl.trim(), courses: c.courses.map((x) => x.trim()).filter(Boolean), consent: { ...c.consent, version: c.consent.version.trim(), privacyUrl: c.consent.privacyUrl.trim(), regulationUrl: c.consent.regulationUrl.trim() } });
+    await saveMassaConfig({ ...c, title: c.title.trim(), creditUrl: c.creditUrl.trim(), stationUrl: c.stationUrl.trim(), coursesUrl: c.coursesUrl.trim(), courses: textToCourses(coursesText), consent: { ...c.consent, version: c.consent.version.trim(), privacyUrl: c.consent.privacyUrl.trim(), regulationUrl: c.consent.regulationUrl.trim() } });
     setStatus({ tone: 'ok', text: 'Configurações da Pesquisa Massa FM salvas.' });
   }
 
@@ -140,11 +160,24 @@ export function TotemPanel() {
           <Field label="Crédito do rodapé" hint="O trecho depois do travessão ( — ) aparece em negrito.">
             <input value={c.credit} onChange={(e) => set('credit', e.target.value)} />
           </Field>
-          <Field
-            label="Cursos que passam na faixa do rodapé"
-            hint="Um curso por linha. Os citados no crédito (ex.: Ciência de Dados, Inteligência Artificial) ganham destaque. Deixe vazio para tirar a faixa."
-          >
-            <textarea rows={6} value={c.courses.join('\n')} onChange={(e) => set('courses', e.target.value.split('\n'))} />
+          <div className="sm:col-span-2">
+            <Field
+              label="Cursos que passam na faixa do rodapé"
+              hint="Um curso por linha, no formato: Nome | link da página do curso (o link é opcional). Os citados no crédito ganham destaque. Deixe vazio para tirar a faixa."
+            >
+              <textarea
+                rows={10}
+                className="font-mono text-sm"
+                value={coursesText}
+                onChange={(e) => {
+                  setStatus(null);
+                  setCoursesText(e.target.value);
+                }}
+              />
+            </Field>
+          </div>
+          <Field label="Link ao tocar no título da faixa" hint="Página com todos os cursos. Deixe vazio para o título não ser clicável.">
+            <input type="url" placeholder="https://" value={c.coursesUrl} onChange={(e) => set('coursesUrl', e.target.value)} />
           </Field>
           <Field label="Link ao tocar no logotipo da Faculdade (rodapé)" hint="Abre em outra aba. Deixe vazio para o logotipo não ser clicável.">
             <input type="url" placeholder="https://" value={c.creditUrl} onChange={(e) => set('creditUrl', e.target.value)} />

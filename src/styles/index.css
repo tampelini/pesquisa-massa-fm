@@ -269,17 +269,45 @@ html.kiosk img {
   animation: massa-ticker linear infinite;
   will-change: transform;
 }
+/* Parada enquanto o dedo (ou o mouse) está sobre ela: fica fácil tocar no curso. */
+.massa-ticker:hover .massa-ticker-track,
+.massa-ticker:active .massa-ticker-track,
+.massa-ticker:focus-within .massa-ticker-track {
+  animation-play-state: paused;
+}
 .massa-ticker-run {
   display: inline-flex;
-  align-items: center;
-  gap: 1.4rem;
-  padding: 0.38rem 0.7rem;
+  align-items: stretch;
 }
-.massa-ticker-run > span + span::before {
+/* Cada curso é uma área de toque de pelo menos 48 px de altura. */
+.massa-ticker-item {
+  display: inline-flex;
+  min-height: max(1.5rem, 48px);
+  align-items: center;
+  padding: 0 0.7rem;
+  color: inherit;
+}
+a.massa-ticker-item {
+  text-decoration: underline;
+  text-decoration-color: rgb(20 24 58 / 0.3);
+  text-underline-offset: 0.2em;
+}
+a.massa-ticker-item:active {
+  background: rgb(115 34 129 / 0.12);
+}
+.massa-ticker-item + .massa-ticker-item::before {
   content: '•';
   margin-right: 1.4rem;
   color: rgb(20 24 58 / 0.35);
   font-weight: 400;
+  text-decoration: none;
+  display: inline-block;
+}
+.massa-ticker-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(20 24 58 / 0.7);
 }
 .massa-ticker-featured {
   font-weight: 800;
