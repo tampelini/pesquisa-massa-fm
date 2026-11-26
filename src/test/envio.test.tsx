@@ -69,7 +69,9 @@ describe('envio online para a planilha', () => {
     expect(init).toMatchObject({ method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
     expect(sheet.calls[0].totem).toBe('Totem 1');
     expect(sheet.rows).toHaveLength(2);
-    expect(sheet.rows[0]).toMatchObject({
+    // As duas foram criadas no mesmo instante: a ordem entre elas não é garantida, então busca pelo telefone.
+    expect(sheet.rows.map((r) => r.telefone).sort()).toEqual(['(45) 99911-0001', '(45) 99911-0002']);
+    expect(sheet.rows.find((r) => r.telefone === '(45) 99911-0001')).toMatchObject({
       evento: 'Evento Massa FM',
       pesquisa: 'Pesquisa Massa FM',
       telefone: '(45) 99911-0001',
@@ -90,7 +92,7 @@ describe('envio online para a planilha', () => {
     const status = await getSyncStatus();
     expect(status.lastError).toBeNull();
     expect(status.lastSuccess).toBeTypeOf('number');
-    expect(participantsToCsv(saved).split('\r\n')[1]).toContain(';sim;v1;nao;sim;');
+    for (const line of participantsToCsv(saved).split('\r\n').slice(1)) expect(line).toContain(';sim;v1;nao;sim;');
 
     // Nova participação: só ela sobe.
     await add('45999110003');
