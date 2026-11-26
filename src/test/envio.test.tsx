@@ -2,9 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from '../App';
 import * as db from '../services/db';
 import { __resetDBForTests } from '../services/db';
-import { DEFAULT_MASSA_CONFIG, DEFAULT_MASSA_EVENTS, DEFAULT_MASSA_SURVEYS } from '../core/defaults';
-import { __resetMassaForTests, anonymizeParticipant, listParticipants, loadMassa, participantsToCsv, resolveActive, saveMassaConfig, submitParticipation } from '../core/store';
-import { countPending, getSyncStatus, isSyncConfigured, syncPending, testSync, toSheetRow } from '../core/sync';
+import { DEFAULT_MASSA_CONFIG, DEFAULT_MASSA_EVENTS, DEFAULT_MASSA_SURVEYS, preconfiguredSync } from '../core/defaults';
+import { mergeMassaConfig, __resetMassaForTests, anonymizeParticipant, listParticipants, loadMassa, participantsToCsv, resolveActive, saveMassaConfig, submitParticipation } from '../core/store';
+import { countPending, deviceLabel, getSyncStatus, isSyncConfigured, syncPending, testSync, toSheetRow } from '../core/sync';
 import { sheetScript } from '../core/sheetScript';
 import { randomToken, validateSync } from '../admin/SyncPanel';
 import type { MassaDraftAnswers, MassaSyncConfig } from '../core/types';
@@ -255,5 +255,44 @@ describe('envio online: totem e painel', () => {
     expect(script).toContain("if (dados.token !== TOKEN) return resposta({ ok: false, erro: 'senha' });");
     expect(script).toContain("destino.setNumberFormat('@')");
     expect(sheetScript('')).toContain('TROQUE-ESTA-SENHA');
+  });
+});
+
+describe('envio pré-configurado na geração do app', () => {
+  it('só liga de fábrica com endereço do Apps Script e senha válidos', () => {
+    expect(preconfiguredSync({})).toEqual({ enabled: false, url: '', token: '', device: '' });
+    expect(preconfiguredSync({ VITE_SYNC_URL: URL_OK })).toMatchObject({ enabled: false, url: '' });
+    expect(preconfiguredSync({ VITE_SYNC_URL: 'https://exemplo.com/x', VITE_SYNC_TOKEN: 'senha-de-teste-123' }).enabled).toBe(false);
+    expect(preconfiguredSync({ VITE_SYNC_URL: URL_OK, VITE_SYNC_TOKEN: 'curta' }).enabled).toBe(false);
+    expect(preconfiguredSync({ VITE_SYNC_URL: ` ${URL_OK} `, VITE_SYNC_TOKEN: ' senha-de-teste-123 ' })).toEqual({
+      enabled: true,
+      url: URL_OK,
+      token: 'senha-de-teste-123',
+      device: '',
+    });
+    // Nos testes (e no repositório) nada vem embutido.
+    expect(DEFAULT_MASSA_CONFIG.sync.enabled).toBe(false);
+  });
+
+  it('aparelho que nunca informou planilha recebe a pré-configuração; quem configurou mantém a sua', () => {
+    const factory = DEFAULT_MASSA_CONFIG.sync;
+    // Configuração salva por uma versão anterior, com o envio vazio: vale o que vem de fábrica.
+    expect(mergeMassaConfig({ sync: { enabled: false, url: '', token: '', device: 'Totem 7' } }).sync).toEqual({ ...factory, device: 'Totem 7' });
+    expect(mergeMassaConfig({}).sync).toEqual(factory);
+    // Quem informou outra planilha, ou desligou de propósito, não é sobrescrito.
+    const own = { enabled: false, url: URL_OK, token: 'outra-senha-123', device: 'Totem 2' };
+    expect(mergeMassaConfig({ sync: own }).sync).toEqual(own);
+  });
+
+  it('sem nome definido, o aparelho ganha um código próprio e estável para a coluna "totem"', async () => {
+    const sheet = fakeSheet();
+    const unnamed = { ...SYNC, device: ' ' };
+    const label = await deviceLabel(unnamed);
+    expect(label).toMatch(/^Aparelho [A-Z2-9]{4}$/);
+    expect(await deviceLabel(unnamed)).toBe(label);
+    expect(await deviceLabel(SYNC)).toBe('Totem 1');
+    await add('45999110001');
+    await syncPending(unnamed);
+    expect(sheet.calls[0].totem).toBe(label);
   });
 });

@@ -1,4 +1,4 @@
-import type { MassaConfig, MassaEvent, MassaQuestion, MassaSurvey } from './types';
+import type { MassaConfig, MassaEvent, MassaQuestion, MassaSurvey, MassaSyncConfig } from './types';
 
 const single = (id: string, prompt: string, options: string[]): MassaQuestion => ({
   id,
@@ -34,6 +34,22 @@ export const DEFAULT_MASSA_EVENTS: MassaEvent[] = [
     surveyId: 'pesquisa-padrao',
   },
 ];
+
+/**
+ * Envio online pré-configurado. O endereço e a senha da planilha não ficam no
+ * código-fonte: entram na geração do app pelas variáveis VITE_SYNC_URL e
+ * VITE_SYNC_TOKEN (arquivo .env.local na máquina, "secrets" no GitHub Actions).
+ * Sem elas, o envio vem desligado e é configurado no painel.
+ *
+ * Atenção: o que entra na geração vai dentro do site e do APK publicados; quem
+ * inspecionar o app consegue extrair os dois valores e gravar na planilha (não ler).
+ */
+export function preconfiguredSync(env: { VITE_SYNC_URL?: string; VITE_SYNC_TOKEN?: string }): MassaSyncConfig {
+  const url = (env.VITE_SYNC_URL ?? '').trim();
+  const token = (env.VITE_SYNC_TOKEN ?? '').trim();
+  const ready = /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url) && token.length >= 8;
+  return ready ? { enabled: true, url, token, device: '' } : { enabled: false, url: '', token: '', device: '' };
+}
 
 // Cores lidas do logotipo oficial da Massa FM Toledo 98.5: azul do "98.5", roxo do
 // nome e dos fones, laranja do fundo. O vermelho é usado só em avisos de erro.
@@ -84,6 +100,6 @@ export const DEFAULT_MASSA_CONFIG: MassaConfig = {
     regulationLabel: 'Regulamento',
     regulationUrl: '',
   },
-  // Desligado até o administrador informar a planilha no painel (nada disso vai no código).
-  sync: { enabled: false, url: '', token: '', device: '' },
+  // Ligado de fábrica só se a planilha foi informada na geração do app; senão, configura-se no painel.
+  sync: preconfiguredSync(import.meta.env),
 };

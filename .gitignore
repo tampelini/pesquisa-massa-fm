@@ -1,6 +1,10 @@
 node_modules
 dist
 *.log
+# Endereço e senha da planilha para gerar o app nesta máquina (nunca vão para o repositório)
+.env
+.env.*
+!.env.example
 .DS_Store
 # Gerados pelo "cap sync" a partir do build web
 android/app/src/main/assets/public

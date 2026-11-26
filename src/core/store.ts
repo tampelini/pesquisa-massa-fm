@@ -41,7 +41,9 @@ export function mergeMassaConfig(saved: Partial<MassaConfig> | undefined): Massa
     ...defined,
     colors: { ...base.colors, ...(saved.colors ?? {}) },
     consent: { ...base.consent, ...(saved.consent ?? {}) },
-    sync: { ...base.sync, ...(saved.sync ?? {}) },
+    // Aparelho que nunca teve a planilha informada (endereço e senha vazios) recebe a pré-configuração
+    // do app. Quem já configurou, ou desligou de propósito, mantém a própria escolha.
+    sync: saved.sync && (saved.sync.url || saved.sync.token) ? { ...base.sync, ...saved.sync } : { ...base.sync, device: saved.sync?.device ?? base.sync.device },
     courses: Array.isArray(saved.courses) ? normalizeCourses(saved.courses, base.courses) : base.courses,
   };
 }

@@ -69,9 +69,23 @@ Como preparar, uma vez (o painel mostra estes passos e o script pronto para copi
    endereço terminado em `/exec`.
 4. No painel, cole o endereço, confira a senha, dê um nome ao totem, salve e use *Testar conexão*.
 
+### App já configurado para uma planilha
+
+Para o site e o APK saírem prontos, sem configurar cada aparelho, informe a planilha na geração do app:
+
+- **Site (GitHub Pages):** em *Settings → Secrets and variables → Actions* do repositório, crie os secrets
+  `VITE_SYNC_URL` (endereço terminado em `/exec`) e `VITE_SYNC_TOKEN` (senha de envio) e rode o workflow de novo.
+- **APK:** copie `.env.example` para `.env.local`, preencha os dois valores e gere o APK. O arquivo `.env.local` não
+  vai para o repositório.
+
+Os dois valores ficam fora do código-fonte, mas vão **dentro do site e do APK gerados**: quem inspecionar o app
+consegue extraí-los e gravar linhas na planilha (não consegue ler). Se isso acontecer, troque a senha no script, crie
+uma nova versão da implantação e gere o app de novo. Sem nome definido no painel, cada aparelho aparece na coluna
+`totem` com um código próprio (ex.: "Aparelho K7QM").
+
 Pontos de atenção:
 
-- O endereço e a senha de envio ficam **só no aparelho** (nunca no código, que é público). Cada totem precisa ser
+- O endereço e a senha de envio informados pelo painel ficam **só no aparelho** (nunca no código, que é público). Cada totem precisa ser
   configurado no próprio painel; todos podem escrever na mesma planilha, e a coluna `totem` diz de onde veio cada linha.
 - O acesso "Qualquer pessoa" só permite chamar o script; ele só grava com a senha correta. A planilha continua privada.
 - Os telefones vão para a conta Google dona da planilha: use uma conta da rádio e compartilhe só com quem precisa.
@@ -207,7 +221,7 @@ scripts/       verificação offline e geração de ícones
 
 ## Testes
 
-`npm test` roda 41 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
+`npm test` roda 44 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
 do participante, aceite obrigatório, telefone duplicado por evento, falha de gravação, inatividade, tipos de pergunta,
 filtros, totais, CSV, anonimização, PIN, as seções do painel e o envio online (fila, falta de internet, senha errada,
 reenvio sem duplicar). `npm run verify:offline` confere o pré-cache do Service

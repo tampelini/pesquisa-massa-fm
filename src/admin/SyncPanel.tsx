@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { CloudUpload, Copy, PlugZap, RefreshCw } from 'lucide-react';
 import { Btn, Card, Field, Notice } from './ui';
 import { formatDateTime, saveMassaConfig, useMassa } from '../core/store';
-import { countPending, getSyncStatus, syncPending, testSync, type SyncStatus } from '../core/sync';
+import { countPending, deviceLabel, getSyncStatus, syncPending, testSync, type SyncStatus } from '../core/sync';
+import { DEFAULT_MASSA_CONFIG } from '../core/defaults';
 import { sheetScript } from '../core/sheetScript';
 import { isWebUrl } from '../core/validation';
 import type { MassaSyncConfig } from '../core/types';
@@ -31,11 +32,15 @@ export function SyncPanel() {
   const [message, setMessage] = useState<{ tone: 'ok' | 'error' | 'warn'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [label, setLabel] = useState('');
+  const factory = DEFAULT_MASSA_CONFIG.sync;
+  const usingFactory = factory.enabled && config.sync.url === factory.url && config.sync.token === factory.token;
   useEffect(() => setS(config.sync), [config.sync]);
 
   const refresh = async () => {
     setStatus(await getSyncStatus());
     setPending(await countPending().catch(() => null));
+    setLabel(await deviceLabel(config.sync).catch(() => ''));
   };
   useEffect(() => {
     void refresh();
@@ -81,6 +86,12 @@ export function SyncPanel() {
         sozinha quando a conexão voltar. O endereço e a senha ficam só neste aparelho. Os telefones vão para a conta Google dona da planilha:
         use uma conta da rádio e compartilhe só com quem precisa.
       </Notice>
+      {usingFactory && (
+        <Notice tone="ok">
+          Este aplicativo já vem configurado para a planilha da pesquisa: o envio funciona sem preencher nada. Só mude os campos abaixo se quiser
+          enviar para outra planilha.
+        </Notice>
+      )}
       {message && <Notice tone={message.tone}>{message.text}</Notice>}
 
       <Card
@@ -96,7 +107,13 @@ export function SyncPanel() {
           </div>
         }
       >
-        <dl className="grid gap-3 text-sm sm:grid-cols-4">
+        <dl className="grid gap-3 text-sm sm:grid-cols-5">
+          <div>
+            <dt className="text-ink/70">Este aparelho na planilha</dt>
+            <dd className="font-semibold" data-testid="sync-device">
+              {label || '—'}
+            </dd>
+          </div>
           <div>
             <dt className="text-ink/70">Envio online</dt>
             <dd className="font-display text-lg font-bold">{savedOn ? 'Ligado' : 'Desligado'}</dd>
@@ -143,7 +160,7 @@ export function SyncPanel() {
                   <Btn onClick={() => set({ token: randomToken() })}>Gerar</Btn>
                 </div>
               </Field>
-              <Field label="Nome deste totem" hint="Vira a coluna 'totem' da planilha. Útil com mais de um aparelho.">
+              <Field label="Nome deste totem" hint="Vira a coluna 'totem' da planilha. Vazio = um código criado sozinho para este aparelho.">
                 <input value={s.device} placeholder="Totem 1" onChange={(e) => set({ device: e.target.value })} />
               </Field>
             </div>

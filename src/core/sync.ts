@@ -15,6 +15,7 @@ import type { MassaParticipant, MassaSyncConfig } from './types';
  */
 
 const STATUS_KEY = 'massaSyncStatus';
+const DEVICE_KEY = 'massaDeviceId';
 const BATCH = 50;
 
 export interface SyncStatus {
@@ -55,12 +56,28 @@ export async function countPending(): Promise<number> {
   return (await getAllParticipants()).filter((p) => !p.syncedAt).length;
 }
 
+/**
+ * Nome do aparelho gravado na coluna "totem". Sem um nome definido no painel, usa
+ * um código curto criado na primeira vez e guardado no aparelho, para dar para
+ * distinguir os totens na planilha mesmo com o app pré-configurado.
+ */
+export async function deviceLabel(sync: MassaSyncConfig): Promise<string> {
+  if (sync.device.trim()) return sync.device.trim();
+  let id = await getKV<string>(DEVICE_KEY).catch(() => undefined);
+  if (!id) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    id = 'Aparelho ' + Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => chars[b % chars.length]).join('');
+    await setKV(DEVICE_KEY, id).catch(() => {});
+  }
+  return id;
+}
+
 async function post(sync: MassaSyncConfig, rows: unknown[]): Promise<string[]> {
   // "text/plain" evita a checagem prévia (preflight) que o Apps Script não responde.
   const res = await fetch(sync.url.trim(), {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ token: sync.token.trim(), totem: sync.device.trim(), rows }),
+    body: JSON.stringify({ token: sync.token.trim(), totem: await deviceLabel(sync), rows }),
     redirect: 'follow',
   });
   if (!res.ok) throw new Error(`A planilha respondeu com erro ${res.status}.`);
