@@ -51,8 +51,35 @@ Seções:
   por evento, pesquisa, período e resposta; busca por telefone; totais e percentuais por pergunta; exportação em CSV
   (`;`, UTF-8, abre no Excel) dos participantes e dos totais; **anonimizar** (apaga o telefone, mantém as respostas)
   ou **excluir** um cadastro.
+- **Envio online:** liga o envio para uma planilha do Google Sheets, mostra a fila e o último envio.
 - **Segurança:** troca do PIN.
 - **Sobre o sistema:** créditos.
+
+## Envio online (Google Sheets)
+
+Opcional. Com ele ligado, cada participação continua sendo gravada primeiro no aparelho e depois é enviada para uma
+planilha do Google Sheets, que fica no Google Drive de quem a criou. Sem internet, a participação fica numa fila e sobe
+sozinha quando a conexão voltar (ao abrir o app, quando a rede volta e a cada 2 minutos). Reenvios não duplicam linhas.
+
+Como preparar, uma vez (o painel mostra estes passos e o script pronto para copiar, em *Envio online*):
+
+1. Crie uma planilha em branco na conta Google que vai guardar os dados.
+2. Na planilha, abra *Extensões → Apps Script* e cole o script do painel (ele já vem com a senha de envio).
+3. *Implantar → Nova implantação*, tipo *App da Web*, executar como *Eu*, acesso *Qualquer pessoa*. Autorize e copie o
+   endereço terminado em `/exec`.
+4. No painel, cole o endereço, confira a senha, dê um nome ao totem, salve e use *Testar conexão*.
+
+Pontos de atenção:
+
+- O endereço e a senha de envio ficam **só no aparelho** (nunca no código, que é público). Cada totem precisa ser
+  configurado no próprio painel; todos podem escrever na mesma planilha, e a coluna `totem` diz de onde veio cada linha.
+- O acesso "Qualquer pessoa" só permite chamar o script; ele só grava com a senha correta. A planilha continua privada.
+- Os telefones vão para a conta Google dona da planilha: use uma conta da rádio e compartilhe só com quem precisa.
+- O bloqueio de telefone repetido continua valendo por aparelho. Com dois totens, a mesma pessoa pode participar uma
+  vez em cada; as repetições aparecem na planilha.
+- Excluir ou anonimizar um cadastro no painel não altera a linha já enviada: apague-a na planilha também.
+- Se o script for alterado, é preciso criar uma **nova versão** da implantação (*Implantar → Gerenciar implantações →
+  Editar → Nova versão*); o endereço continua o mesmo.
 
 ## Dados pessoais (LGPD)
 
@@ -61,8 +88,8 @@ hora, evento, pesquisa, telefone, respostas, versão e texto do consentimento ac
 comunicações promocionais. Nenhum nome é pedido.
 
 - A lista de participantes só existe no painel, atrás do PIN. Nenhum dado pessoal é escrito no console do navegador.
-- **Os dados ficam somente no aparelho.** Não há servidor nem sincronização: com mais de um totem, exporte o CSV de
-  cada um. Desinstalar o app ou limpar os dados do navegador apaga os participantes, então exporte ao fim de cada evento.
+- **Por padrão, os dados ficam somente no aparelho.** Sem o Envio online ligado, não há sincronização: com mais de um
+  totem, exporte o CSV de cada um. Desinstalar o app ou limpar os dados do navegador apaga os participantes, então exporte ao fim de cada evento.
 - **O PIN é uma barreira contra o público, não uma proteção forte.** Mantenha o totem sob guarda da equipe e trate os
   arquivos CSV exportados como confidenciais.
 - O link da Política de Privacidade abre um QR Code no totem, para a pessoa ler no próprio celular mesmo sem internet
@@ -180,7 +207,8 @@ scripts/       verificação offline e geração de ícones
 
 ## Testes
 
-`npm test` roda 29 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
+`npm test` roda 41 testes: máscara e validação de telefone, identidade e créditos (logotipos, links e faixa de cursos), fluxo completo
 do participante, aceite obrigatório, telefone duplicado por evento, falha de gravação, inatividade, tipos de pergunta,
-filtros, totais, CSV, anonimização, PIN e as seções do painel. `npm run verify:offline` confere o pré-cache do Service
+filtros, totais, CSV, anonimização, PIN, as seções do painel e o envio online (fila, falta de internet, senha errada,
+reenvio sem duplicar). `npm run verify:offline` confere o pré-cache do Service
 Worker.
