@@ -24,7 +24,7 @@ do mesmo evento. Se a gravação falhar, as respostas ficam na tela para tentar 
 O rodapé de todas as telas traz o logotipo da Faculdade Donaduzzi, o crédito com o curso responsável em negrito
 (Ciência de Dados e Inteligência Artificial) e uma faixa em que os nomes de todos os cursos da Faculdade correm de
 lado, com os dois cursos do crédito em destaque. Tocar no nome de um curso abre a página dele em
-faculdadedonaduzzi.com.br, e o título da faixa abre a lista de cursos de graduação; a faixa para enquanto é tocada.
+faculdadedonaduzzi.com.br, e o título da faixa abre a lista de cursos de graduação; a faixa corre sempre, sem parar ao ser tocada.
 A lista de cursos e os links são editáveis no painel (uma linha por curso: `Nome | link`).
 
 No canto superior, o logotipo da Massa FM abre <https://massa.com.br/massa-fm-toledo/>. No rodapé, o logotipo da

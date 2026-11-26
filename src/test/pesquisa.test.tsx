@@ -192,7 +192,11 @@ describe('totem: identidade e créditos', () => {
     fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: /Faculdade Donaduzzi: conheça o curso/ }));
     await waitFor(() => expect(open).toHaveBeenCalledWith('https://tampelini.github.io/cd-ia-donaduzzi/', '_blank'));
     // Tocar em um curso da faixa abre a página daquele curso.
-    fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: 'Farmácia (abre o site em outra aba)' }));
+    const farmacia = within(screen.getByTestId('massa-footer')).getByRole('link', { name: 'Farmácia (abre o site em outra aba)' });
+    farmacia.focus();
+    fireEvent.click(farmacia);
+    // O link não fica com o foco depois do toque (era o que deixava a faixa parada).
+    expect(farmacia).not.toHaveFocus();
     await waitFor(() => expect(open).toHaveBeenCalledWith('https://faculdadedonaduzzi.com.br/graduacao-farmacia/', '_blank'));
     fireEvent.click(within(screen.getByTestId('massa-footer')).getByRole('link', { name: 'Cursos da Faculdade Donaduzzi (abre o site em outra aba)' }));
     await waitFor(() => expect(open).toHaveBeenCalledWith('https://faculdadedonaduzzi.com.br/cursos-de-graduacao/', '_blank'));

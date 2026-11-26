@@ -129,6 +129,7 @@ function CoursesTicker({ config }: { config: MassaConfig }) {
         aria-label={hidden ? undefined : `${label} (abre o site em outra aba)`}
         onClick={(e) => {
           e.preventDefault();
+          e.currentTarget.blur();
           void openExternal(url);
         }}
         className={`massa-ticker-item ${className}`}
@@ -149,7 +150,7 @@ function CoursesTicker({ config }: { config: MassaConfig }) {
   );
   return (
     <div className="massa-ticker" data-testid="massa-courses" role="group" aria-label={title}>
-      {/* A velocidade acompanha o tamanho da lista: cerca de 4 s por curso. A faixa para enquanto é tocada. */}
+      {/* A velocidade acompanha o tamanho da lista: cerca de 4 s por curso. Ela corre sempre, mesmo durante e depois do toque. */}
       <div className="massa-ticker-track" style={{ animationDuration: `${Math.max(20, courses.length * 4)}s` }}>
         {run(false)}
         {run(true)}

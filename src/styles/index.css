@@ -269,12 +269,7 @@ html.kiosk img {
   animation: massa-ticker linear infinite;
   will-change: transform;
 }
-/* Parada enquanto o dedo (ou o mouse) está sobre ela: fica fácil tocar no curso. */
-.massa-ticker:hover .massa-ticker-track,
-.massa-ticker:active .massa-ticker-track,
-.massa-ticker:focus-within .massa-ticker-track {
-  animation-play-state: paused;
-}
+/* A faixa nunca para: nem ao passar o mouse, nem ao tocar, nem depois do toque. */
 .massa-ticker-run {
   display: inline-flex;
   align-items: stretch;
